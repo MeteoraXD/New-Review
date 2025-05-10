@@ -1,0 +1,12 @@
+To test the PDF functionality:
+
+1. Make sure your server is running
+2. Try adding a book with a valid PDF URL (must point to a publicly accessible PDF)
+3. Or use the PDF uploader component to upload a PDF directly
+4. When viewing a book with a PDF, click the "Read Now" button
+
+Common issues:
+- Some PDF links may be blocked by CORS (Cross-Origin Resource Sharing)
+- Make sure the PDF URL ends with .pdf or points to a real PDF file
+- Check your browser console for errors if the PDF doesn't load
+- Make sure the server can access the uploads directory 

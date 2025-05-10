@@ -1,0 +1,18 @@
+{
+  "name": "booksansar",
+  "version": "1.0.0",
+  "description": "BookSansar E-Library Platform",
+  "scripts": {
+    "server": "cd server && npm start",
+    "client": "cd client && npm start",
+    "start": "node start-server.js",
+    "start:local": "node start-server.js --local",
+    "start:all": "concurrently \"npm run start\" \"npm run client\"",
+    "setup": "cd server && npm run setup",
+    "checkdb": "cd server && npm run checkdb",
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.0"
+  }
+}

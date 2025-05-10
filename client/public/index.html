@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1a237e" />
+    <meta
+      name="description"
+      content="BookSansar - Your Digital Library"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <!--
+      manifest.json provides metadata used when your web app is installed on a
+      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
+    -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <!--
+      Notice the use of %PUBLIC_URL% in the tags above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
+
+      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+    -->
+    <title>BookSansar - Your Digital Library</title>
+    
+    <!-- Material UI Fonts -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    />
+    
+    <!-- PDF.js library - load before the app -->
+    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js"></script>
+    
+    <!-- Enhanced 3D and animation support -->
+    <style>
+      /* Smooth scrolling */
+      html {
+        scroll-behavior: smooth;
+      }
+      
+      /* Ensure 3D transforms work correctly */
+      .book-container {
+        perspective: 2000px;
+        transform-style: preserve-3d;
+      }
+      
+      /* Book page styling */
+      .book-page {
+        transform-style: preserve-3d;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1.000);
+        box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+      }
+      
+      /* Apply for all 3D transforms */
+      * {
+        -webkit-transform-style: preserve-3d;
+        transform-style: preserve-3d;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+      }
+      
+      /* Better animation performance */
+      .animate-page {
+        will-change: transform;
+      }
+      
+      /* Prevent page flicker during animations */
+      canvas {
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+      }
+      
+      /* Book spine styling */
+      .book-spine {
+        position: absolute;
+        left: 50%;
+        height: 100%;
+        width: 30px;
+        background: linear-gradient(to right, #635649, #8a7b6d, #635649);
+        transform: translateX(-50%);
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        z-index: -1;
+      }
+
+      /* Hide the built-in PDF viewer */
+      body.custom-pdf-viewer-active embed[type="application/pdf"],
+      body.custom-pdf-viewer-active object[type="application/pdf"],
+      body.custom-pdf-viewer-active iframe[src$=".pdf"],
+      body.custom-pdf-viewer-active .pdfobject { 
+        display: none !important; 
+      }
+    </style>
+    
+    <script>
+      // Clear cache for PDF viewer components
+      if ('caches' in window) {
+        caches.keys().then(function(names) {
+          names.forEach(function(name) {
+            if (name.includes('pdf') || name.includes('react-pdf')) {
+              caches.delete(name);
+            }
+          });
+        });
+      }
+      
+      // Initialize PDF.js
+      document.addEventListener('DOMContentLoaded', function() {
+        window.pdfjsLib = window.pdfjsLib || {};
+        window.pdfjsLib.GlobalWorkerOptions = window.pdfjsLib.GlobalWorkerOptions || {};
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+        
+        // Disable the built-in PDF viewer in Chrome
+        if (navigator.plugins && navigator.plugins['Chrome PDF Viewer']) {
+          navigator.plugins['Chrome PDF Viewer'].enabled = false;
+        }
+        
+        // Add a debug log function for PDF viewer
+        window.PDFDebug = {
+          urls: [],
+          errors: [],
+          log: function(msg) {
+            console.log('[PDF Debug]', msg);
+          }
+        };
+      });
+    </script>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm start` or `yarn start`.
+      To create a production bundle, use `npm run build` or `yarn build`.
+    -->
+  </body>
+</html>

@@ -1,0 +1,12 @@
+[
+  {
+    "_id": "admin123",
+    "username": "Administrator",
+    "email": "admin@booksansar.com",
+    "password": "admin123",
+    "role": "admin",
+    "isPremium": true,
+    "hasPremiumAccess": true,
+    "lastLogin": "2025-04-23T03:42:24.036Z"
+  }
+]
