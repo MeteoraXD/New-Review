@@ -3,6 +3,8 @@ const router = express.Router();
 const { authenticateToken, isAdmin } = require('../middleware/auth');
 const reviewController = require('../controllers/reviewController');
 const { check, validationResult } = require('express-validator');
+const Review = require('../models/Review');
+const Book = require('../models/Book');
 
 // Validation middleware
 const reviewValidation = [

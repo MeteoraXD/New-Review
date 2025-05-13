@@ -157,6 +157,7 @@ import { Refresh as RefreshIcon } from '@mui/icons-material';
     const fetchReviews = useCallback(async () => {
         setReviewsLoading(true);
         setReviewsError('');
+        
         try {
             const { data } = await axios.get(`/api/reviews/book/${id}`);
             if (data.success) {
@@ -177,42 +178,49 @@ import { Refresh as RefreshIcon } from '@mui/icons-material';
         if (id) fetchReviews();
     }, [id, fetchReviews]);
 
-    const handleReviewSubmit = async (e) => {
-        e.preventDefault();
-        if (!user) {
-            toast.error('Please log in to submit a review');
-            navigate('/login');
-            return;
+   const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!user) {
+        toast.error('Please log in to submit a review');
+        navigate('/login');
+        return;
+    }
+    if (!review.rating) {
+        toast.error('Please select a rating');
+        return;
+    }
+    if (!review.comment.trim()) {
+        toast.error('Please write a comment');
+        return;
+    }
+    setSubmittingReview(true);
+    try {
+        const token = localStorage.getItem('token');
+        const response = await axios.post(
+            '/api/reviews',
+            { bookId: id, rating: review.rating, comment: review.comment },
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (response.data.success) {
+            toast.success('Review submitted successfully!');
+            setReview({ rating: 0, comment: '' });
+
+            // Directly update the reviews list with the new review
+            const newReview = response.data.data; // Assuming the response contains the new review data
+            setReviews((prevReviews) => [...prevReviews, newReview]);
+
+            // Optionally, you can update the average rating as well
+            setAverageRating(response.data.averageRating || 0);
+        } else {
+            toast.error(response.data.message || 'Failed to submit review');
         }
-        if (!review.rating) {
-            toast.error('Please select a rating');
-            return;
-        }
-        if (!review.comment.trim()) {
-            toast.error('Please write a comment');
-            return;
-        }
-        setSubmittingReview(true);
-        try {
-            const token = localStorage.getItem('token');
-            const response = await axios.post(
-                '/api/reviews',
-                { bookId: id, rating: review.rating, comment: review.comment },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            if (response.data.success) {
-                toast.success('Review submitted successfully!');
-                setReview({ rating: 0, comment: '' });
-                fetchReviews();
-            } else {
-                toast.error(response.data.message || 'Failed to submit review');
-            }
-        } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to submit review');
-        } finally {
-            setSubmittingReview(false);
-        }
-    };
+    } catch (err) {
+        toast.error(err.response?.data?.message || 'Failed to submit review');
+    } finally {
+        setSubmittingReview(false);
+    }
+};
+
 
     const handleToggleFavorite = async () => {
         if (!user) {

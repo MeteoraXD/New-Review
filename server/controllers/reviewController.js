@@ -17,10 +17,10 @@ exports.createReview = async (req, res) => {
             });
         }
 
-        if (rating < 1 || rating > 5) {
+        if (rating < 1 || rating > 5 || isNaN(rating) || rating % 1 !== 0 && (rating * 10) % 1 !== 0) {
             return res.status(400).json({
                 success: false,
-                message: 'Rating must be between 1 and 5'
+                message: 'Rating must be between 1 and 5, with one decimal place at most'
             });
         }
 
@@ -49,7 +49,7 @@ exports.createReview = async (req, res) => {
             });
         }
 
-        // Check if user exists and get premium status
+        // Check if user exists
         const user = await User.findById(userId);
         if (!user) {
             return res.status(401).json({
@@ -58,23 +58,18 @@ exports.createReview = async (req, res) => {
             });
         }
 
-        // Determine premium status
-        const isPremium = user.isPremium || (typeof user.hasPremiumAccess === 'function' && user.hasPremiumAccess());
-
-        // Create new review
+        // Create new review without approval status
         const review = new Review({
             user: userId,
             book: bookId,
             rating,
             comment: comment.trim(),
-            status: isPremium ? 'approved' : 'pending',
-            isVerifiedPurchase: isPremium
         });
 
         await review.save();
 
         // Update book's average rating
-        const reviews = await Review.find({ book: bookId, status: 'approved' });
+        const reviews = await Review.find({ book: bookId });
         const averageRating = reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length;
         
         book.rating = averageRating || 0; // Handle case when there are no reviews
@@ -86,7 +81,7 @@ exports.createReview = async (req, res) => {
 
         res.status(201).json({
             success: true,
-            message: isPremium ? 'Review submitted and approved' : 'Review submitted and pending approval',
+            message: 'Review submitted successfully',
             data: populatedReview
         });
     } catch (error) {
@@ -108,25 +103,19 @@ exports.getBookReviews = async (req, res) => {
         const sortBy = req.query.sortBy || 'createdAt';
         const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
 
-        // Get approved reviews with pagination
-        const reviews = await Review.find({ 
-            book: bookId,
-            status: 'approved'
-        })
-        .populate('user', 'username profilePicture')
-        .sort({ [sortBy]: sortOrder })
-        .skip((page - 1) * limit)
-        .limit(limit);
+        // Get reviews with pagination (no approval status filter)
+        const reviews = await Review.find({ book: bookId })
+            .populate('user', 'username profilePicture')
+            .sort({ [sortBy]: sortOrder })
+            .skip((page - 1) * limit)
+            .limit(limit);
 
         // Get total count for pagination
-        const totalReviews = await Review.countDocuments({ 
-            book: bookId,
-            status: 'approved'
-        });
+        const totalReviews = await Review.countDocuments({ book: bookId });
 
         // Calculate average rating
         const averageRating = await Review.aggregate([
-            { $match: { book: bookId, status: 'approved' } },
+            { $match: { book: bookId } },
             { $group: { _id: null, average: { $avg: '$rating' } } }
         ]);
 
@@ -185,7 +174,7 @@ exports.updateReview = async (req, res) => {
 
         // Update book's average rating
         const book = await Book.findById(review.book);
-        const reviews = await Review.find({ book: review.book, status: 'approved' });
+        const reviews = await Review.find({ book: review.book });
         const averageRating = reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length;
         
         book.rating = averageRating;
@@ -238,7 +227,7 @@ exports.deleteReview = async (req, res) => {
 
         // Update book's average rating
         const book = await Book.findById(review.book);
-        const reviews = await Review.find({ book: review.book, status: 'approved' });
+        const reviews = await Review.find({ book: review.book });
         const averageRating = reviews.length > 0 
             ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
             : 0;
@@ -308,4 +297,4 @@ exports.toggleLike = async (req, res) => {
             error: error.message
         });
     }
-}; 
+};
